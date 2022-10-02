@@ -7,26 +7,31 @@ from mpl_toolkits.mplot3d import Axes3D
 
 import serial
 
-# arduinoComPort = "/dev/ttyACM0"
-# baudRate = 9600
-# serialPort = serial.Serial(arduinoComPort, baudRate, timeout=1)
+arduinoComPort = "/dev/ttyACM0"
+baudRate = 9600
+serialPort = serial.Serial(arduinoComPort, baudRate, timeout=1)
 
-# while True:
-#     lineOfData = serialPort.readline().decode()
+while True:
+  lineOfData = serialPort.readline().decode()
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-xo = list(range(0, 100))
-yo = list(range(0, 100))
-zo = list(range(0, 100))
+  if len(lineOfData) > 0:
+    x, y, z = (int(float(i)) for i in lineOfData.split(','))
+    print("z = " + str(x), end="")
+    print(", y = " + str(y), end="")
+    print(", z = " + str(z))
+    fig = plt.figure()
+    ax = plt.axes(projection='3d')
+    
+    xo = list(range(0, 100))
+    yo = list(range(0, 100))
+    zo = list(range(0, 100))
 
-random.shuffle(xo)
-random.shuffle(yo)
-random.shuffle(zo)
+    # random.shuffle(xo)
+    # random.shuffle(yo)
+    # random.shuffle(zo)
 
+    ax.scatter(zo, yo, xo, c=xo, cmap='viridis', linewidth=0.5)
 
-ax.scatter(zo, yo, xo, c=xo, cmap='viridis', linewidth=0.5)
+    ax.set_title('Test Scan of Letter "M"')
 
-ax.set_title('Test Scan of Letter "M"')
-
-plt.show()
+    plt.show()
