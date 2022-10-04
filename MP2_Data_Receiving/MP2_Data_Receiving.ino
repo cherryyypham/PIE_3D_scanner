@@ -16,13 +16,10 @@ Servo servoTilt;
 int servoPinPan = 9;
 int servoPinTilt = 10;
 
-//Initiating sensor values
+//Initiating sensor and coordinate values
 int sensorPin = 0;
-int sensorValue = 0;
-
-//Initiating coordinate values
 float xVal = 0;
-float yVal = 100;                           //Estimating 1cm 
+float yVal = 0;                           
 float zVal = 0;
 
 //Initiating values for calculating coordinate values
@@ -37,36 +34,38 @@ void setup() {
   servoTilt.attach(servoPinTilt);
 
   //Begin Serial
-  long baudRate = 9600;                     //Same baudRate with Python file
-  Serial.begin(baudRate);
-
+  Serial.begin(9600);
 }
 
 void loop() { 
-  while(true) {
-    for (int j = 0; j <= 180; j += 10) {
-      horAngle = -90 + j;
+    servoTilt.write(0);
+    servoPan.write(0);
+    delay(2000);
+    for (int j = 50; j <= 80; j += 5) {
+      horAngle = j;
+      Serial.print("Pan Angle: "); Serial.println(horAngle);
       servoPan.write(horAngle);
       delay(100);
-      for (int i = 0; i <= 180; i += 10) {
-        verAngle = -90 + i;
+      for (int i = 40; i <= 70; i += 1) {     //Change this number if scan is ugly
+        verAngle = i;
         servoTilt.write(verAngle);
+        
         //Read Distance Data from Sensor
-        sensorValue = analogRead(sensorPin);
-        if (sensorValue >= 300){
-          //Calibrating horizontal and vertical data
-          xVal = sin(verAngle) * panPane;
-          zVal = sin(horAngle) * sensorLength;
-          Serial.print(xVal); Serial.print(",");
-          Serial.print(yVal); Serial.print(",");
-          Serial.println(zVal);
-          //Delay so data is not overwritten
-          delay(500);
-        }
+        yVal = analogRead(sensorPin);
+        delay(100);
+        
+        //Calibrating horizontal and vertical data
+        xVal = sin(verAngle) * panPane;
+        zVal = sin(horAngle) * sensorLength;
+        Serial.print(xVal); Serial.print(",");
+        Serial.print(yVal); Serial.print(", ");
+        Serial.println(zVal);
+        
+        //Delay so data is not overwritten
+        delay(100);
       }
+      
       //Reset the vertical angle for next pan
       verAngle = 0;
     }
-    
-  }
 }
