@@ -28,6 +28,8 @@ int horAngle = 0;
 int panPane = 500;                          //Estimating 5cm
 int sensorLength = 200; 
 
+int scan_begin = 1;
+
 void setup() {
   //Attaching servos to pins
   servoPan.attach(servoPinPan);
@@ -38,34 +40,44 @@ void setup() {
 }
 
 void loop() { 
-    servoTilt.write(0);
-    servoPan.write(0);
-    delay(2000);
-    for (int j = 50; j <= 80; j += 5) {
-      horAngle = j;
-      Serial.print("Pan Angle: "); Serial.println(horAngle);
-      servoPan.write(horAngle);
-      delay(100);
-      for (int i = 40; i <= 70; i += 1) {     //Change this number if scan is ugly
-        verAngle = i;
-        servoTilt.write(verAngle);
-        
-        //Read Distance Data from Sensor
-        yVal = analogRead(sensorPin);
-        delay(100);
-        
-        //Calibrating horizontal and vertical data
-        xVal = sin(verAngle) * panPane;
-        zVal = sin(horAngle) * sensorLength;
-        Serial.print(xVal); Serial.print(",");
-        Serial.print(yVal); Serial.print(", ");
-        Serial.println(zVal);
-        
-        //Delay so data is not overwritten
-        delay(100);
-      }
+    while (scan_begin == 1) {
+      delay(2000);
       
-      //Reset the vertical angle for next pan
-      verAngle = 0;
+      servoTilt.write(0);
+      servoPan.write(0);
+      delay(2000);
+      for (int j = 50; j <= 80; j += 5) {
+        horAngle = j;
+        servoPan.write(horAngle);
+        delay(100);
+        for (int i = 40; i <= 70; i += 1) {     //Change this number if scan is ugly
+          verAngle = i;
+//          Serial.print((verAngle-40)+1+31*((horAngle-50)/5)); Serial.print(" - ");
+          servoTilt.write(verAngle);
+          delay(100);
+          
+          //Read Distance Data from Sensor
+          yVal = analogRead(sensorPin);
+          
+          //Calibrating horizontal and vertical data
+          xVal = sin(verAngle) * panPane;
+          zVal = sin(horAngle) * sensorLength;
+          Serial.print(xVal); Serial.print(",");
+          Serial.print(yVal); Serial.print(",");
+          Serial.println(zVal);
+          
+          //Delay so data is not overwritten
+          delay(100);
+        }
+        //Reset the vertical angle for next pan
+        verAngle = 0;
+      }
+      //Indicate that 1 scanning session is finished
+      Serial.println("Done");
+      
+      scan_begin = 0;
+      servoTilt.write(0);
+      servoPan.write(0);
     }
+    
 }
