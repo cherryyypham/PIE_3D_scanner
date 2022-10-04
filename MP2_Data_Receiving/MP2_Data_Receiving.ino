@@ -3,7 +3,6 @@
    PIE-S2 Project 2
    Name: DIY 3D Scanner
    Purpose: Create a 3D visual representation of a letter using a pan/tilt mechanism of 2 servos mounting an IR Distance Sensor
-
    @author Miriam Rich and Cherry Pham
    @version 1.0 10/03/2022
 */
@@ -25,8 +24,6 @@ float zVal = 0;
 //Initiating values for calculating coordinate values
 int verAngle = 0;
 int horAngle = 0;
-int panPane = 500;                          //Estimating 5cm
-int sensorLength = 200; 
 
 int scan_begin = 1;
 
@@ -60,8 +57,8 @@ void loop() {
           yVal = analogRead(sensorPin);
           
           //Calibrating horizontal and vertical data
-          xVal = sin(verAngle) * panPane;
-          zVal = sin(horAngle) * sensorLength;
+          xVal = verAngle
+          zVal = horAngle
           Serial.print(xVal); Serial.print(",");
           Serial.print(yVal); Serial.print(",");
           Serial.println(zVal);
