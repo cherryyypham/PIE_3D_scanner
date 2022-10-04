@@ -17,9 +17,9 @@ int servoPinTilt = 10;
 
 //Initiating sensor and coordinate values
 int sensorPin = 0;
-float xVal = 0;
-float yVal = 0;                           
-float zVal = 0;
+float horVal = 0;
+float sensorVal = 0;                           
+float verVal = 0;
 
 //Initiating values for calculating coordinate values
 int verAngle = 0;
@@ -43,25 +43,25 @@ void loop() {
       servoTilt.write(0);
       servoPan.write(0);
       delay(2000);
-      for (int j = 50; j <= 80; j += 5) {
+      for (int j = 45; j <= 85; j += 5) {
         horAngle = j;
         servoPan.write(horAngle);
         delay(100);
-        for (int i = 40; i <= 70; i += 1) {     //Change this number if scan is ugly
+        for (int i = 35; i <= 75; i += 5) {     //Change this number if scan is ugly
           verAngle = i;
 //          Serial.print((verAngle-40)+1+31*((horAngle-50)/5)); Serial.print(" - ");
           servoTilt.write(verAngle);
           delay(100);
-          
+
           //Read Distance Data from Sensor
-          yVal = analogRead(sensorPin);
+          sensorVal = analogRead(sensorPin);
           
           //Calibrating horizontal and vertical data
-          xVal = verAngle
-          zVal = horAngle
-          Serial.print(xVal); Serial.print(",");
-          Serial.print(yVal); Serial.print(",");
-          Serial.println(zVal);
+          verVal = verAngle;
+          horVal = horAngle;
+          Serial.print(horVal); Serial.print(",");
+          Serial.print(sensorVal); Serial.print(",");
+          Serial.println(verVal);
           
           //Delay so data is not overwritten
           delay(100);
