@@ -1,60 +1,48 @@
+"""
+Read data from a csv file with n lines of data, each line has a format of 'a,b,c'.
+Convert that data into plottable points and plot them in a 3D space.
+"""
+
 import csv
 import math
-import numpy as np
 import matplotlib.pyplot as plt
 
-arr = []
-
-pan_arr = []
-val_arr = []
-tilt_arr = []
+# Initial declare for the arrays containing point values for plotting
 x_arr = []
 y_arr = []
 z_arr = []
-# string1 = ""
 
-with open("data3.csv") as f:
+# Calibration equation from voltage to distance obtained from MATLAB curve-fitting function
+def voltage_to_distance(x):
+    return 0.0001766*(x**2) - 0.2427*x + 97.34
+
+# Short hand for getting the cosine of an angle, with x being an angle value in degrees
+def cos_of(x):
+    return math.cos(math.radians(x))
+
+# Short hand for getting the sine of an angle, with x being an angle value in degrees
+def sin_of(x):
+    return math.sin(math.radians(x))
+
+# Open csv file with desired data
+with open("data6.csv") as f:
     r2 = csv.reader(f)
+    # Scan in every row, with each row format being [x,y,z]
     for row in r2:
-        arr.append(row)
-
-for i in arr:
-    # string1 += str(i.index(j))
-    pan_arr.append(i[0])
-    val_arr.append(i[1])
-    tilt_arr.append(i[2])
-# print(string1)
-# x_arr = x_arr[:958]
-# y_arr = y_arr[:958]
-# z_arr = z_arr[:958]
-
-# print(arr)
-
-
-# for pan in pan_arr:
-#     pan = math.radians(int(pan))
-
-# for tilt in tilt_arr:
-#     tilt = math.radians(int(tilt))
-
-# for val in val_arr:
-#     val = (414091/(int(val) + 102.6) ** (1.548))
-
-for i in range(len(pan_arr)):
-    # converting polar coordinate data from arduino to cartesian
-    x = (414091/(int(val_arr[i]) + 102.6) ** (1.548)) * np.sin(math.radians(int(tilt_arr[i]))) * np.cos(math.radians(int(pan_arr[i])))
-    y = (414091/(int(val_arr[i]) + 102.6) ** (1.548))  * np.sin(math.radians(int(tilt_arr[i]))) * np.sin(math.radians(int(pan_arr[i])))
-    z = (414091/(int(val_arr[i]) + 102.6) ** (1.548)) * np.cos(math.radians(int(tilt_arr[i])))
-
-    x_arr.append(x)
-    y_arr.append(y)
-    z_arr.append(z)
-
+        # Only get data from desired range, the letter should be somewhere between 27-37cm away from
+        # the IR distance sensor
+        if voltage_to_distance(int(row[1])) > 27 and voltage_to_distance(int(row[1])) < 37:
+            # Convert polar coordinates into cartesian
+            x_coord = sin_of(int(row[2])) * cos_of(int(row[0])-60) * voltage_to_distance(int(row[1]))
+            y_coord = sin_of(int(row[2])) * sin_of(int(row[0])-60) * voltage_to_distance(int(row[1]))
+            z_coord = cos_of(int(row[2])) * voltage_to_distance(int(row[1]))
+            # Add everything of the same type to an array for plotting
+            x_arr.append(x_coord)
+            y_arr.append(y_coord)
+            z_arr.append(z_coord)
+# Plot the 3D representation of the letter from collected sensor data using a scatterplot
 fig = plt.figure()
 ax = plt.axes(projection='3d')
-
-ax.scatter(z_arr, y_arr, x_arr, c=x_arr, cmap='viridis', linewidth=0.5)
-
-ax.set_title('Scan of Letter "M"')
-
+ax.scatter(x_arr, y_arr, z_arr, cmap=plt.get_cmap('jet'), linewidth=0.5)
+ax.set_title('Scan of letter "L"')
 plt.show()

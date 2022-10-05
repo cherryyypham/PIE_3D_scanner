@@ -2,9 +2,10 @@
 /**
    PIE-S2 Project 2
    Name: DIY 3D Scanner
-   Purpose: Create a 3D visual representation of a letter using a pan/tilt mechanism of 2 servos mounting an IR Distance Sensor
+   Purpose: Move 3D scanner servos that mount an IR distance sensor, output distance reading in
+   voltage along with the servos angles where each reading is recorded
    @author Miriam Rich and Cherry Pham
-   @version 1.0 10/03/2022
+   @version 1.0 10/06/2022
 */
 
 #include <Servo.h>
@@ -15,63 +16,66 @@ Servo servoTilt;
 int servoPinPan = 9;
 int servoPinTilt = 10;
 
-//Initiating sensor and coordinate values
+//Initiating sensors values
 int sensorPin = 0;
-float horVal = 0;
-float sensorVal = 0;                           
-float verVal = 0;
+float sensorVal = 0;
 
-//Initiating values for calculating coordinate values
+//Initiating servos' angles
 int verAngle = 0;
 int horAngle = 0;
 
+//Boolean indicating whether the scanning process should be running
 int scan_begin = 1;
 
+// Setup function that run once
 void setup() {
   //Attaching servos to pins
   servoPan.attach(servoPinPan);
   servoTilt.attach(servoPinTilt);
 
-  //Begin Serial
+  //Begin serial
   Serial.begin(9600);
 }
 
+// Loop through 3D scanner tasks (pan, tilt, read in data)
 void loop() { 
     while (scan_begin == 1) {
-      delay(2000);
-      
+      //Reset servos to ensure consistent behavior
       servoTilt.write(0);
       servoPan.write(0);
       delay(2000);
-      for (int j = 45; j <= 85; j += 5) {
+      //Pan loop from 35deg to 85deg
+      for (int j = 35; j <= 85; j += 1) {
         horAngle = j;
         servoPan.write(horAngle);
-        delay(100);
-        for (int i = 35; i <= 75; i += 5) {     //Change this number if scan is ugly
+        delay(100); //Short delay between pans for possible lagging elements to catch up
+        //Tilt loop
+        for (int i = 20; i <= 90; i += 1) {
           verAngle = i;
-//          Serial.print((verAngle-40)+1+31*((horAngle-50)/5)); Serial.print(" - ");
           servoTilt.write(verAngle);
-          delay(100);
-
-          //Read Distance Data from Sensor
-          sensorVal = analogRead(sensorPin);
+          delay(100); //Short delay between tilts for possible lagging elements to catch up
+                      //This delay is also crucial for the IR sensor to receive stable data
+          //Take distance data 5 times to average out later for accurate/consistent readings
+          for (int n = 0; n < 5; n++) {
+            //Read distance data from sensor, add everything to a sum to be averaged later
+            sensorVal += analogRead(sensorPin);
+          }
+          //Send raw data to Python so it is easier to manipulate
+          Serial.print(47); Serial.print(", ");
+          Serial.print(sensorVal/5); Serial.print(", ");
+          Serial.println(horAngle);
+          //Reset the sum of sensor output per every tilt
+          sensorVal = 0;
           
-          //Calibrating horizontal and vertical data
-          verVal = verAngle;
-          horVal = horAngle;
-          Serial.print(horVal); Serial.print(",");
-          Serial.print(sensorVal); Serial.print(",");
-          Serial.println(verVal);
-          
-          //Delay so data is not overwritten
+          //Extra delay
           delay(100);
         }
-        //Reset the vertical angle for next pan
+        //Reset the vertical angle (tilt angle) for next pan
         verAngle = 0;
       }
       //Indicate that 1 scanning session is finished
       Serial.println("Done");
-      
+      //Reset scanner, end process
       scan_begin = 0;
       servoTilt.write(0);
       servoPan.write(0);
